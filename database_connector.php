@@ -1,21 +1,22 @@
 <?php
 namespace CandyWrappers;
 
-class PDO_Connector {
+class Database_Connector {
     
-    protected $pdo;
+    protected $pdo, $type;
     
-    public function __construct(string $host, protected string $type, ?string $user = null, ?string $pass = null, ?string $dbname = null, ?int $port = null) {
+    public function __construct(string $host, object $resource) {
+        $this->type = $resource->type ?? 'mysql';
         $connection_str = match($this->type) {
-            'sqlsrv' => ":Server=$host".(isset($port) ? ",$port" : '').(isset($dbname) ? ";Database=$dbname" : ''),
+            'sqlsrv' => ":Server=$host".(isset($resource->port) ? ",$resource->port" : '').(isset($resource->dbname) ? ";Database=$resource->dbname" : ''),
             'odbc' => ":$host",
-            default => ":host=$host".(isset($port) ? ";port=$port" : '').(isset($dbname) ? ";dbname=$dbname" : '')
+            default => ":host=$host".(isset($resource->port) ? ";port=$resource->port" : '').(isset($resource->dbname) ? ";dbname=$resource->dbname" : '')
         };
-        if ($type == 'odbc') {
+        if ($resource->type == 'odbc') {
             putenv("ODBCINI=/etc/odbc.ini");
             putenv("ODBCINST=/etc/odbcinst.ini");
         }
-        $this->pdo = new \PDO($type.$connection_str, $user, $pass);
+        $this->pdo = new \PDO($this->type.$connection_str, $resource->user, $resource->pass);
     }
     
     public function __destruct() {

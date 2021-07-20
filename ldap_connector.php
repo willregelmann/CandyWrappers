@@ -3,11 +3,12 @@ namespace CandyWrappers;
 
 final class LDAP_Connector {
     
-    private $ldap;
+    private $ldap, $base_dn;
     
-    public function __construct(string $host, protected string $base_dn, string $user, string $pass){
+    public function __construct(string $host, object $resource){
         $this->ldap = ldap_connect($host);
-        ldap_bind($this->ldap, $user, $pass);
+        $this->base_dn = $resource->base_dn;
+        ldap_bind($this->ldap, $resource->user, $resource->pass);
     }
     
     public function __destruct(){
